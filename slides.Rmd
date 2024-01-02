@@ -1,0 +1,109 @@
+---
+title: 'Wine Quality Prediction'
+subtitle: 'An app to explore and model predictors of vinho verde quality'
+author: "Ayoub HAIDA"
+date: "January 2, 2024"
+output: ioslides_presentation
+---
+
+<style>
+
+h1 {
+  color: #BEDE7E;
+}
+
+h2 {
+  color: #BEDE7E;
+}
+
+p {
+  font-size: 20px;
+}
+
+li {
+  font-size: 20px;
+}
+
+slides > slide.title-slide hgroup h1 {
+  font-size: 60px;
+  color: #BEDE7E;
+}
+
+slides > slide.title-slide hgroup h2 {
+  font-size: 24px;
+}
+
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(dplyr)
+library(data.table)
+library(ggplot2)
+library(ggfortify)
+
+data <- fread('./data/prepared_data/wine_data.csv') %>%
+  filter(type == 'white') %>% select(density, quality)
+```
+
+## Overview
+
+The Predictors of Wine Quality app allows for the exploration and modeling of various physicochemical properties (acidity, density, sulfates, etc.) that may predict wine quality. 
+
+Data used by this app was obtained from [this link](http://www3.dsi.uminho.pt/pcortez/wine/) (Cortez et al., 2009). The dataset includes physicochemical property values for various red and white wines from the Portuguese [vinho verde](http://www.vinhoverde.pt/en/) variety. 
+
+The app has three main functionalities, each located in a separate tab: 
+
+- **exploration of variables** in this dataset reflecting different physicochemical properties of vinho verde wine
+- constructing and evaluating multiple linear **regression** models to examine the relationship between properties and quality
+- **prediction** of wine quality based on inputted values of various physicochemical properties
+
+## Explore Variables Tab
+
+For example, to explore **density** values for white vinho verde wines, you could use the first tab. After selecting relevant preferences, the app will display 4 visualizations. including the plots below, that allow for exploration of the variable:
+
+```{r explore, echo = TRUE, eval = TRUE, fig.height = 3}
+par(mfrow = c(1,2))
+p1 <- boxplot(data$density, col = "#BEDE7E", xlab = "density")
+p2 <- plot(data$density, data$quality, xlab = "density", ylab = "quality",
+           abline(lm(quality ~ density, data = data),
+                  lwd = 3, col = "#BEDE7E"))
+```
+
+## Regression Tab
+
+After exploring variables, you might want to model the quality of white vinho verde based on only *acidity*, *density*, and *sulfates*. After inputting these options on the app's second tab, the app would display a summary of the model fit along with diagnostic plots such as those below: 
+
+```{r regression_hide, echo = FALSE, eval = TRUE}
+data <- fread('./data/prepared_data/wine_data.csv') %>%
+  filter(type == 'white') %>%
+  select(-type)
+
+```
+
+```{r regression, fig.height = 3, echo = FALSE, eval = TRUE}
+my_model <- lm(quality ~ acidity + density + sulfates, data = data)
+autoplot(my_model, ncol = 2, label.size = 3, colour = "#BEDE7E") + theme_bw()
+```
+
+This model fit has an R-squared value of `r summary(my_model)$r.squared`. You could try to improve it by adding more predictors and removing outliers, all of which are options in the app.
+
+## Prediction Tab
+
+Finally, you might be interested in predicting the quality of a white vinho verde, based on custom values of all the available physicochemical properties. On the third tab, you could use the sliders to select custom values of each variable. 
+
+The app would then predict a quality value according to the model below, and display the predicted quality value:
+
+```{r prediction, echo = TRUE, eval = TRUE}
+my_model <- lm(quality ~ ., data = data)
+predicted_value <- round(as.vector(predict(my_model, 
+    newdata = data.frame(acidity = 0.7, alcohol = 12, 
+                        chlorides = 0.2, density = 0.998,
+                        sugar = 4.7, sulfates = 1.32))), digits = 1)
+```
+
+`r predicted_value` /10
+
+In addition, the prediction tab includes a separate plot for each variable, showing the raw data along with points indicating the predicted quality for each's inputted value, if all other inputs are held at their mean value.
+
+

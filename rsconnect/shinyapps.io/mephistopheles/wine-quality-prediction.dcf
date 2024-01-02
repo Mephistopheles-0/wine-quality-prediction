@@ -1,0 +1,12 @@
+name: wine-quality-prediction
+title: wine-quality-prediction
+username: mephistopheles
+account: mephistopheles
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 10859356
+bundleId: 8100146
+url: https://mephistopheles.shinyapps.io/wine-quality-prediction/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
